@@ -1,225 +1,354 @@
--- Steal an Egg GUI z zabezpieczeniem przed powielaniem
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- Usuwanie starej wersji GUI przed załadowaniem nowej
-local guiName = "StealEggDropdownGUI"
+-- Czyszczenie starych wersji interfejsu
+local guiName = "StealEggAutoHub"
 if LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
     LocalPlayer.PlayerGui[guiName]:Destroy()
 end
 
-local BIOME_DATABASE = {
-    ["Forest"] = {"kurczak", "chicken", "pies", "dog", "szop", "raccoon", "forest"},
-    ["Lake"] = {"zaba", "frog", "kaczatko", "duck", "labedz", "swan", "lewiatan", "leviathan", "lake", "jezioro"},
-    ["Desert"] = {"skoczek", "fenek", "fennec", "waz", "snake", "kobra", "cobra", "sfinks", "sphinx", "desert", "pustynia"},
-    ["Jungle"] = {"tukan", "toucan", "malpa", "monkey", "krokodyl", "crocodile", "tygrys", "tiger", "jungle", "dzungla"},
-    ["Snow"] = {"pingwin", "penguin", "mamut", "mammoth", "yeti", "lodowy smok", "ice dragon", "snow", "snieg"},
-    ["Volcano"] = {"gekon", "gecko", "ognisty byk", "fire bull", "cerber", "cerberus", "wulkaniczny smok", "volcano dragon", "volcano", "wulkan"},
-    ["Abyss"] = {"rekin", "shark", "orka", "orca", "wieloryb", "whale", "kraken", "abyss", "ocean", "glebiny"},
-    ["Prehistoric"] = {"prehistoric", "dino", "dinozaur", "prehistoryczny"},
-    ["Cosmic"] = {"jednorozec", "unicorn", "cosmic", "kosmos"},
-    ["Cherry Blossom"] = {"cherry", "blossom", "sakura"},
-    ["Titan Temple"] = {"titan", "temple", "tytan"},
-    ["Angels & Demons"] = {"angel", "demon", "aniol", "diabel"}
+-- Baza danych zaktualizowana na podstawie podanych obrazów
+local EGG_DATABASE = {
+    ["Forest"] = {
+        Common = {"Chicken Egg", "Dog Egg"},
+        Uncommon = {"Bird Egg"},
+        Rare = {"Burrowing Owl Egg", "Raccoon Egg"},
+        Epic = {"Fox Egg", "Bear Egg"},
+        Legendary = {"Brr Brr Patapim Egg"}
+    },
+    ["Lake"] = {
+        Common = {"Frog Egg", "Duckling Egg"},
+        Uncommon = {"Catfish Egg"},
+        Rare = {"Turtle Egg"},
+        Epic = {"Trulimero Trulicina Egg", "Swan Egg"},
+        Legendary = {"Axolotl Egg"},
+        Cosmic = {"Leviathan Egg"}
+    },
+    ["Desert"] = {
+        Common = {"Jerboa Egg"},
+        Uncommon = {"Fennec Egg"},
+        Rare = {"Camel Egg"},
+        Epic = {"Tob Tobi Tob Tob Egg"},
+        Legendary = {"Snake Egg"},
+        Mythic = {"Sand Spider Egg", "Scorpion Egg"},
+        Cosmic = {"Royal Sphinx Egg"}
+    },
+    ["Jungle"] = {
+        Rare = {"Chimpanzee Egg", "Toucan Egg"},
+        Epic = {"Crocodile Egg"},
+        Legendary = {"Gorilla Egg", "Orangutini Ananassini Egg"},
+        Mythic = {"Spider Egg", "Tiger Egg"},
+        Secret = {"King Snake Egg"}
+    },
+    ["Snow"] = {
+        Rare = {"Penguin Egg"},
+        Epic = {"Walrus Egg"},
+        Legendary = {"Polar Bear Egg"},
+        Mythic = {"Sabertooth Tiger Egg", "Mammoth Egg"},
+        Cosmic = {"King Mammoth Egg"},
+        Secret = {"Yeti Egg"},
+        Eternal = {"Ice Dragon Egg"}
+    },
+    ["Volcano"] = {
+        Rare = {"Lava Gecko Egg"},
+        Epic = {"Lava Frog Egg"},
+        Legendary = {"Flaming Bull Egg", "Lava Iguana Egg"},
+        Mythic = {"Chillin Chilli Egg"},
+        Secret = {"Cerberus Egg"},
+        Eternal = {"Phoenix Egg", "Lava Dragon Egg"}
+    },
+    ["Abyss Ocean"] = {
+        Rare = {"Parrotfish Egg"},
+        Epic = {"Swordfish Egg"},
+        Legendary = {"Shark Egg"},
+        Mythic = {"Orca Egg"},
+        Cosmic = {"Whale Shark Egg", "Beluga Whale Egg"},
+        Secret = {"Kraken Egg"},
+        Eternal = {"El Maja Egg"}
+    },
+    ["Prehistoric"] = {
+        Rare = {"Dodo Egg"},
+        Legendary = {"Pterodactyl Egg"},
+        Mythic = {"Ankylosaurus Egg"},
+        Cosmic = {"Triceratops Egg", "Bronto Egg"},
+        Secret = {"T-Rex Egg", "Tralaledon Egg"},
+        Eternal = {"Mosasaurus Egg"}
+    },
+    ["Cosmic"] = {
+        Epic = {"Centipede Egg"},
+        Legendary = {"Cosmic Gecko Egg"},
+        Mythic = {"Cosmic Gorilla Egg"},
+        Cosmic = {"La Vacca Saturno Saturnita Egg"},
+        Secret = {"Cosmic Skeleton Boss Egg", "Cosmic Dragon Egg"},
+        Eternal = {"Eternal Lunar Dragon Egg"},
+        Divine = {"Unicorn Egg"}
+    },
+    ["Cherry Blossom"] = {
+        Epic = {"Crane Egg"},
+        Legendary = {"Salamander Egg"},
+        Mythic = {"Red Panda Egg"},
+        Cosmic = {"Snowy Owl Egg", "Koi Egg"},
+        Secret = {"Stag Egg"},
+        Eternal = {"Oni Tiger Egg"},
+        Divine = {"Kitsune Egg"}
+    },
+    ["Titan Temple"] = {
+        Legendary = {"Spideron Egg", "Crustacia Egg"},
+        Mythic = {"Bladehide Egg"},
+        Cosmic = {"Mantaris Egg", "Rhinotaur Egg"},
+        Secret = {"Mutant Shark Egg"},
+        Eternal = {"Gorilla King Egg"},
+        Divine = {"Nightflame Egg"}
+    },
+    ["Angels & Demons"] = {
+        Legendary = {"Flame Sprite Egg", "Light Dove Egg"},
+        Mythic = {"Winged Lamb Egg", "Toro Egg"},
+        Cosmic = {"Imp Egg", "Sacred Moth Egg", "Holy Peacock Egg", "Demon Hound Egg"},
+        Secret = {"Gargoyle Egg", "Pure Jellyfish Egg", "Centaur Egg", "RazorFang Egg"},
+        Eternal = {"Pegasus Egg", "Skeleton Horse Egg", "Equinox Egg"},
+        Divine = {"ArchAngel Egg", "World Burner Egg", "Aetheron Egg"}
+    }
 }
 
 local currentBiome = "All"
 local currentRarity = "Any"
+local autoFarmActive = false
+local farmInterval = 3
 
--- Tworzenie GUI
+-- GUI setup
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local BiomeLabel = Instance.new("TextLabel")
-local BiomeDropdown = Instance.new("TextButton")
-local BiomeListFrame = Instance.new("ScrollingFrame")
-local RarityLabel = Instance.new("TextLabel")
-local RarityDropdown = Instance.new("TextButton")
-local RarityListFrame = Instance.new("ScrollingFrame")
-local StealBtn = Instance.new("TextButton")
-
 ScreenGui.Name = guiName
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
-MainFrame.Size = UDim2.new(0, 280, 0, 280)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 360)
+MainFrame.Position = UDim2.new(0.35, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
-Title.Parent = MainFrame
+local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
-Title.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Title.Text = "Steal an Egg Hub"
+Title.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Title.Text = "Egg Steal Auto-Farm"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
+Title.Parent = MainFrame
 
--- Wybór Biomu
-BiomeLabel.Parent = MainFrame
-BiomeLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
-BiomeLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
+-- Tworzenie rozwijanego menu dla biomów
+local BiomeLabel = Instance.new("TextLabel")
+BiomeLabel.Position = UDim2.new(0.05, 0, 0.12, 0)
+BiomeLabel.Size = UDim2.new(0.9, 0, 0.06, 0)
 BiomeLabel.BackgroundTransparency = 1
-BiomeLabel.Text = "Wybierz Biom:"
-BiomeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+BiomeLabel.Text = "Biom:"
+BiomeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 BiomeLabel.TextXAlignment = Enum.TextXAlignment.Left
+BiomeLabel.Parent = MainFrame
 
-BiomeDropdown.Parent = MainFrame
-BiomeDropdown.Position = UDim2.new(0.05, 0, 0.23, 0)
-BiomeDropdown.Size = UDim2.new(0.9, 0, 0.12, 0)
-BiomeDropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-BiomeDropdown.Text = "All"
-BiomeDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+local BiomeBtn = Instance.new("TextButton")
+BiomeBtn.Position = UDim2.new(0.05, 0, 0.18, 0)
+BiomeBtn.Size = UDim2.new(0.9, 0, 0.09, 0)
+BiomeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+BiomeBtn.Text = "All"
+BiomeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BiomeBtn.Parent = MainFrame
 
-BiomeListFrame.Parent = MainFrame
-BiomeListFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-BiomeListFrame.Size = UDim2.new(0.9, 0, 0.35, 0)
-BiomeListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-BiomeListFrame.Visible = false
-BiomeListFrame.ZIndex = 5
+local BiomeList = Instance.new("ScrollingFrame")
+BiomeList.Position = UDim2.new(0.05, 0, 0.27, 0)
+BiomeList.Size = UDim2.new(0.9, 0, 0.3, 0)
+BiomeList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+BiomeList.Visible = false
+BiomeList.ZIndex = 10
+BiomeList.Parent = MainFrame
 
--- Wybór Rzadkości
-RarityLabel.Parent = MainFrame
-RarityLabel.Position = UDim2.new(0.05, 0, 0.38, 0)
-RarityLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
+-- Tworzenie rozwijanego menu dla rzadkości
+local RarityLabel = Instance.new("TextLabel")
+RarityLabel.Position = UDim2.new(0.05, 0, 0.29, 0)
+RarityLabel.Size = UDim2.new(0.9, 0, 0.06, 0)
 RarityLabel.BackgroundTransparency = 1
-RarityLabel.Text = "Wybierz Rzadkość:"
-RarityLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+RarityLabel.Text = "Rzadkość:"
+RarityLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 RarityLabel.TextXAlignment = Enum.TextXAlignment.Left
+RarityLabel.Parent = MainFrame
 
-RarityDropdown.Parent = MainFrame
-RarityDropdown.Position = UDim2.new(0.05, 0, 0.46, 0)
-RarityDropdown.Size = UDim2.new(0.9, 0, 0.12, 0)
-RarityDropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-RarityDropdown.Text = "Any"
-RarityDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+local RarityBtn = Instance.new("TextButton")
+RarityBtn.Position = UDim2.new(0.05, 0, 0.35, 0)
+RarityBtn.Size = UDim2.new(0.9, 0, 0.09, 0)
+RarityBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RarityBtn.Text = "Any"
+RarityBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RarityBtn.Parent = MainFrame
 
-RarityListFrame.Parent = MainFrame
-RarityListFrame.Position = UDim2.new(0.05, 0, 0.58, 0)
-RarityListFrame.Size = UDim2.new(0.9, 0, 0.25, 0)
-RarityListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-RarityListFrame.Visible = false
-RarityListFrame.ZIndex = 5
+local RarityList = Instance.new("ScrollingFrame")
+RarityList.Position = UDim2.new(0.05, 0, 0.44, 0)
+RarityList.Size = UDim2.new(0.9, 0, 0.3, 0)
+RarityList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+RarityList.Visible = false
+RarityList.ZIndex = 10
+RarityList.Parent = MainFrame
 
-StealBtn.Parent = MainFrame
-StealBtn.Position = UDim2.new(0.05, 0, 0.72, 0)
-StealBtn.Size = UDim2.new(0.9, 0, 0.2, 0)
-StealBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 60)
-StealBtn.Text = "TELEPORTUJ DO JAJKA"
-StealBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- Przycisk Teleportacji
+local TPBtn = Instance.new("TextButton")
+TPBtn.Position = UDim2.new(0.05, 0, 0.48, 0)
+TPBtn.Size = UDim2.new(0.9, 0, 0.12, 0)
+TPBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+TPBtn.Text = "Teleportuj Raz"
+TPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TPBtn.Parent = MainFrame
 
--- Obsługa listy biomów
-local biomesList = {"All", "Forest", "Lake", "Desert", "Jungle", "Snow", "Volcano", "Abyss", "Prehistoric", "Cosmic", "Cherry Blossom", "Titan Temple", "Angels & Demons"}
-BiomeListFrame.CanvasSize = UDim2.new(0, 0, 0, #biomesList * 25)
+-- Przycisk Auto Farm
+local AutoBtn = Instance.new("TextButton")
+AutoBtn.Position = UDim2.new(0.05, 0, 0.63, 0)
+AutoBtn.Size = UDim2.new(0.9, 0, 0.14, 0)
+AutoBtn.BackgroundColor3 = Color3.fromRGB(170, 40, 40)
+AutoBtn.Text = "AUTO FARM: OFF"
+AutoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoBtn.Parent = MainFrame
 
-for i, bName in ipairs(biomesList) do
-    local btn = Instance.new("TextButton")
-    btn.Parent = BiomeListFrame
-    btn.Size = UDim2.new(1, 0, 0, 25)
-    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.Text = bName
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.ZIndex = 6
-    
-    btn.MouseButton1Click:Connect(function()
-        currentBiome = bName
-        BiomeDropdown.Text = bName
-        BiomeListFrame.Visible = false
+-- Status informacji o wykrytych jajkach
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Position = UDim2.new(0.05, 0, 0.80, 0)
+StatusLabel.Size = UDim2.new(0.9, 0, 0.15, 0)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Skanowanie mapy..."
+StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+StatusLabel.TextWrapped = true
+StatusLabel.Parent = MainFrame
+
+-- Populowanie listy biomów
+local biomes = {"All", "Forest", "Lake", "Desert", "Jungle", "Snow", "Volcano", "Abyss Ocean", "Prehistoric", "Cosmic", "Cherry Blossom", "Titan Temple", "Angels & Demons"}
+BiomeList.CanvasSize = UDim2.new(0, 0, 0, #biomes * 25)
+for i, name in ipairs(biomes) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 0, 25)
+    b.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
+    b.Text = name
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    b.ZIndex = 11
+    b.Parent = BiomeList
+    b.MouseButton1Click:Connect(function()
+        currentBiome = name
+        BiomeBtn.Text = name
+        BiomeList.Visible = false
     end)
 end
 
-BiomeDropdown.MouseButton1Click:Connect(function()
-    RarityListFrame.Visible = false
-    BiomeListFrame.Visible = not BiomeListFrame.Visible
-end)
-
--- Obsługa listy rzadkości
-local rarityList = {"Any", "Divine", "Secret", "Eternal"}
-RarityListFrame.CanvasSize = UDim2.new(0, 0, 0, #rarityList * 25)
-
-for i, rName in ipairs(rarityList) do
-    local btn = Instance.new("TextButton")
-    btn.Parent = RarityListFrame
-    btn.Size = UDim2.new(1, 0, 0, 25)
-    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.Text = rName
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.ZIndex = 6
-    
-    btn.MouseButton1Click:Connect(function()
-        currentRarity = rName
-        RarityDropdown.Text = rName
-        RarityListFrame.Visible = false
+-- Populowanie listy rzadkości
+local rarities = {"Any", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Cosmic", "Secret", "Eternal", "Divine"}
+RarityList.CanvasSize = UDim2.new(0, 0, 0, #rarities * 25)
+for i, name in ipairs(rarities) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 0, 25)
+    b.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
+    b.Text = name
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    b.ZIndex = 11
+    b.Parent = RarityList
+    b.MouseButton1Click:Connect(function()
+        currentRarity = name
+        RarityBtn.Text = name
+        RarityList.Visible = false
     end)
 end
 
-RarityDropdown.MouseButton1Click:Connect(function()
-    BiomeListFrame.Visible = false
-    RarityListFrame.Visible = not RarityListFrame.Visible
+BiomeBtn.MouseButton1Click:Connect(function()
+    RarityList.Visible = false
+    BiomeList.Visible = not BiomeList.Visible
 end)
 
--- Logika Filtru i Teleportacji
-local function matchesFilter(objName, parentName)
-    local nameLower = objName:lower()
-    local parentLower = parentName:lower()
+RarityBtn.MouseButton1Click:Connect(function()
+    BiomeList.Visible = false
+    RarityList.Visible = not RarityList.Visible
+end)
 
-    if currentRarity ~= "Any" then
-        local rarityLower = currentRarity:lower()
-        if not (nameLower:find(rarityLower) or parentLower:find(rarityLower)) then
-            return false
-        end
+-- Weryfikacja nazwy obiektu względem filtrów
+local function isEggMatching(obj)
+    local nameLower = obj.Name:lower()
+    local parentLower = obj.Parent and obj.Parent.Name:lower() or ""
+
+    if not (nameLower:find("egg") or parentLower:find("egg")) then
+        return false
     end
 
-    if currentBiome ~= "All" then
-        local keywords = BIOME_DATABASE[currentBiome]
-        if keywords then
-            local matched = false
-            for _, kw in ipairs(keywords) do
-                if nameLower:find(kw) or parentLower:find(kw) then
-                    matched = true
-                    break
+    if currentBiome == "All" and currentRarity == "Any" then
+        return true
+    end
+
+    for bName, rTable in pairs(EGG_DATABASE) do
+        if currentBiome == "All" or currentBiome == bName then
+            for rName, eggList in pairs(rTable) do
+                if currentRarity == "Any" or currentRarity == rName then
+                    for _, eggName in ipairs(eggList) do
+                        local target = eggName:lower()
+                        if nameLower:find(target) or parentLower:find(target) then
+                            return true
+                        end
+                    end
                 end
             end
-            if not matched then return false end
         end
     end
-
-    return true
+    return false
 end
 
-StealBtn.MouseButton1Click:Connect(function()
+-- Funkcja wykonywania teleportacji
+local function executeTeleport()
     local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-
+    
     local hrp = character.HumanoidRootPart
-    local nearestEgg = nil
-    local shortestDistance = math.huge
+    local targetEgg = nil
+    local shortestDist = math.huge
+    local totalFound = 0
 
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            local objName = obj.Name
-            local parentName = obj.Parent and obj.Parent.Name or ""
-
-            if (objName:lower():find("egg") or parentName:lower():find("egg")) then
-                if matchesFilter(objName, parentName) then
-                    local dist = (hrp.Position - obj.Position).Magnitude
-                    if dist < shortestDistance then
-                        shortestDistance = dist
-                        nearestEgg = obj
+        if obj:IsA("BasePart") or obj:IsA("Model") then
+            if isEggMatching(obj) then
+                totalFound = totalFound + 1
+                local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+                if part then
+                    local dist = (hrp.Position - part.Position).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        targetEgg = part
                     end
                 end
             end
         end
     end
 
-    if nearestEgg then
-        hrp.CFrame = nearestEgg.CFrame + Vector3.new(0, 3, 0)
+    if targetEgg then
+        hrp.CFrame = targetEgg.CFrame + Vector3.new(0, 3, 0)
+        StatusLabel.Text = "Wykryto: " .. totalFound .. " jajek. Teleportowano do: " .. targetEgg.Name
     else
-        warn("Nie znaleziono pasującego jajka!")
+        StatusLabel.Text = "Brak jajek pasujących do wybranego filtra na mapie."
+    end
+end
+
+TPBtn.MouseButton1Click:Connect(executeTeleport)
+
+AutoBtn.MouseButton1Click:Connect(function()
+    autoFarmActive = not autoFarmActive
+    if autoFarmActive then
+        AutoBtn.Text = "AUTO FARM: ON"
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(40, 170, 40)
+    else
+        AutoBtn.Text = "AUTO FARM: OFF"
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(170, 40, 40)
+    end
+end)
+
+-- Pętla Auto Farm
+task.spawn(function()
+    while true do
+        task.wait(farmInterval)
+        if autoFarmActive then
+            pcall(executeTeleport)
+        end
     end
 end)
