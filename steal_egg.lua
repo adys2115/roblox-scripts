@@ -1,7 +1,13 @@
--- Steal an Egg Complete GUI Script (z menu wyboru)
+-- Steal an Egg GUI z zabezpieczeniem przed powielaniem
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
+
+-- Usuwanie starej wersji GUI przed załadowaniem nowej
+local guiName = "StealEggDropdownGUI"
+if LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
+    LocalPlayer.PlayerGui[guiName]:Destroy()
+end
 
 local BIOME_DATABASE = {
     ["Forest"] = {"kurczak", "chicken", "pies", "dog", "szop", "raccoon", "forest"},
@@ -33,10 +39,11 @@ local RarityDropdown = Instance.new("TextButton")
 local RarityListFrame = Instance.new("ScrollingFrame")
 local StealBtn = Instance.new("TextButton")
 
+ScreenGui.Name = guiName
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
-MainFrame.Name = "StealEggDropdownGUI"
+MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
@@ -51,7 +58,7 @@ Title.Text = "Steal an Egg Hub"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 
--- Przycisk Wyboru Biomu
+-- Wybór Biomu
 BiomeLabel.Parent = MainFrame
 BiomeLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
 BiomeLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
@@ -74,7 +81,7 @@ BiomeListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 BiomeListFrame.Visible = false
 BiomeListFrame.ZIndex = 5
 
--- Przycisk Wyboru Rzadkości
+-- Wybór Rzadkości
 RarityLabel.Parent = MainFrame
 RarityLabel.Position = UDim2.new(0.05, 0, 0.38, 0)
 RarityLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
