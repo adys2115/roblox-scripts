@@ -1,9 +1,8 @@
--- Steal an Egg Complete GUI Script
+-- Steal an Egg Complete GUI Script (z menu wyboru)
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- Baza danych biomów
 local BIOME_DATABASE = {
     ["Forest"] = {"kurczak", "chicken", "pies", "dog", "szop", "raccoon", "forest"},
     ["Lake"] = {"zaba", "frog", "kaczatko", "duck", "labedz", "swan", "lewiatan", "leviathan", "lake", "jezioro"},
@@ -26,18 +25,22 @@ local currentRarity = "Any"
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
-local BiomeBtn = Instance.new("TextButton")
-local RarityBtn = Instance.new("TextButton")
+local BiomeLabel = Instance.new("TextLabel")
+local BiomeDropdown = Instance.new("TextButton")
+local BiomeListFrame = Instance.new("ScrollingFrame")
+local RarityLabel = Instance.new("TextLabel")
+local RarityDropdown = Instance.new("TextButton")
+local RarityListFrame = Instance.new("ScrollingFrame")
 local StealBtn = Instance.new("TextButton")
 
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
-MainFrame.Name = "StealEggMasterGUI"
+MainFrame.Name = "StealEggDropdownGUI"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 260, 0, 220)
+MainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+MainFrame.Size = UDim2.new(0, 280, 0, 280)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -48,47 +51,109 @@ Title.Text = "Steal an Egg Hub"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 
-BiomeBtn.Parent = MainFrame
-BiomeBtn.Position = UDim2.new(0.05, 0, 0.22, 0)
-BiomeBtn.Size = UDim2.new(0.9, 0, 0.2, 0)
-BiomeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-BiomeBtn.Text = "Biom: All"
-BiomeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- Przycisk Wyboru Biomu
+BiomeLabel.Parent = MainFrame
+BiomeLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
+BiomeLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
+BiomeLabel.BackgroundTransparency = 1
+BiomeLabel.Text = "Wybierz Biom:"
+BiomeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+BiomeLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-RarityBtn.Parent = MainFrame
-RarityBtn.Position = UDim2.new(0.05, 0, 0.46, 0)
-RarityBtn.Size = UDim2.new(0.9, 0, 0.2, 0)
-RarityBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-RarityBtn.Text = "Rzadkość: Any"
-RarityBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BiomeDropdown.Parent = MainFrame
+BiomeDropdown.Position = UDim2.new(0.05, 0, 0.23, 0)
+BiomeDropdown.Size = UDim2.new(0.9, 0, 0.12, 0)
+BiomeDropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+BiomeDropdown.Text = "All"
+BiomeDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+BiomeListFrame.Parent = MainFrame
+BiomeListFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+BiomeListFrame.Size = UDim2.new(0.9, 0, 0.35, 0)
+BiomeListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+BiomeListFrame.Visible = false
+BiomeListFrame.ZIndex = 5
+
+-- Przycisk Wyboru Rzadkości
+RarityLabel.Parent = MainFrame
+RarityLabel.Position = UDim2.new(0.05, 0, 0.38, 0)
+RarityLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
+RarityLabel.BackgroundTransparency = 1
+RarityLabel.Text = "Wybierz Rzadkość:"
+RarityLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+RarityLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+RarityDropdown.Parent = MainFrame
+RarityDropdown.Position = UDim2.new(0.05, 0, 0.46, 0)
+RarityDropdown.Size = UDim2.new(0.9, 0, 0.12, 0)
+RarityDropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+RarityDropdown.Text = "Any"
+RarityDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+RarityListFrame.Parent = MainFrame
+RarityListFrame.Position = UDim2.new(0.05, 0, 0.58, 0)
+RarityListFrame.Size = UDim2.new(0.9, 0, 0.25, 0)
+RarityListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+RarityListFrame.Visible = false
+RarityListFrame.ZIndex = 5
 
 StealBtn.Parent = MainFrame
-StealBtn.Position = UDim2.new(0.05, 0, 0.70, 0)
-StealBtn.Size = UDim2.new(0.9, 0, 0.24, 0)
+StealBtn.Position = UDim2.new(0.05, 0, 0.72, 0)
+StealBtn.Size = UDim2.new(0.9, 0, 0.2, 0)
 StealBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 60)
 StealBtn.Text = "TELEPORTUJ DO JAJKA"
 StealBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Przełączanie Biomów
+-- Obsługa listy biomów
 local biomesList = {"All", "Forest", "Lake", "Desert", "Jungle", "Snow", "Volcano", "Abyss", "Prehistoric", "Cosmic", "Cherry Blossom", "Titan Temple", "Angels & Demons"}
-local biomeIndex = 1
+BiomeListFrame.CanvasSize = UDim2.new(0, 0, 0, #biomesList * 25)
 
-BiomeBtn.MouseButton1Click:Connect(function()
-    biomeIndex = biomeIndex + 1
-    if biomeIndex > #biomesList then biomeIndex = 1 end
-    currentBiome = biomesList[biomeIndex]
-    BiomeBtn.Text = "Biom: " .. currentBiome
+for i, bName in ipairs(biomesList) do
+    local btn = Instance.new("TextButton")
+    btn.Parent = BiomeListFrame
+    btn.Size = UDim2.new(1, 0, 0, 25)
+    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.Text = bName
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = 6
+    
+    btn.MouseButton1Click:Connect(function()
+        currentBiome = bName
+        BiomeDropdown.Text = bName
+        BiomeListFrame.Visible = false
+    end)
+end
+
+BiomeDropdown.MouseButton1Click:Connect(function()
+    RarityListFrame.Visible = false
+    BiomeListFrame.Visible = not BiomeListFrame.Visible
 end)
 
--- Przełączanie Rzadkości
+-- Obsługa listy rzadkości
 local rarityList = {"Any", "Divine", "Secret", "Eternal"}
-local rarityIndex = 1
+RarityListFrame.CanvasSize = UDim2.new(0, 0, 0, #rarityList * 25)
 
-RarityBtn.MouseButton1Click:Connect(function()
-    rarityIndex = rarityIndex + 1
-    if rarityIndex > #rarityList then rarityIndex = 1 end
-    currentRarity = rarityList[rarityIndex]
-    RarityBtn.Text = "Rzadkość: " .. currentRarity
+for i, rName in ipairs(rarityList) do
+    local btn = Instance.new("TextButton")
+    btn.Parent = RarityListFrame
+    btn.Size = UDim2.new(1, 0, 0, 25)
+    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.Text = rName
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = 6
+    
+    btn.MouseButton1Click:Connect(function()
+        currentRarity = rName
+        RarityDropdown.Text = rName
+        RarityListFrame.Visible = false
+    end)
+end
+
+RarityDropdown.MouseButton1Click:Connect(function()
+    BiomeListFrame.Visible = false
+    RarityListFrame.Visible = not RarityListFrame.Visible
 end)
 
 -- Logika Filtru i Teleportacji
